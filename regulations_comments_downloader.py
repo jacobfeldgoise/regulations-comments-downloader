@@ -1,3 +1,34 @@
+###############################################################
+# Download Public Comments and Attachments from Regulations.gov
+
+# MIT License
+#
+# Copyright (c) 2021 Jacob A. Feldgoise
+#
+# Permission is hereby granted, free of charge, to any person $
+# of this software and associated documentation files (the "So$
+# in the Software without restriction, including without limit$
+# to use, copy, modify, merge, publish, distribute, sublicense$
+# copies of the Software, and to permit persons to whom the So$
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall $
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KI$
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERC$
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO $
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGE$
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWI$
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHE$
+# SOFTWARE.
+
+###############################################################
+# SET THESE VALUES!
+api_key = "DEMO_KEY"
+baseFolder_path = "/path/to/folder/"
+###############################################################
+
 import requests, os, json, xmltodict, datetime, re, sys
 import pandas as pd
 
@@ -64,6 +95,7 @@ def check_previousWork(file_path):
     else:
         return None, None
 
+# Credit for the download() function goes to Sumit Ghosh:
 # https://sumit-ghosh.com/articles/python-download-progress-bar/
 def download(url, filename):
     with open(filename, 'wb') as f:
@@ -277,9 +309,5 @@ def main_loop(api_key, baseFolder_path):
         get_allComments_csv.to_csv(folder_path + "comment_details.csv", index=False)
         print("[" + str(datetime.datetime.now()) + "] " + "Exiting main loop...")
 
-######
-
-api_key = "DEMO_KEY"
-baseFolder_path = "/path/to/folder/"
 
 main_loop(api_key, baseFolder_path)
