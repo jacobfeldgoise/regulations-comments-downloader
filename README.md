@@ -19,10 +19,10 @@ To see what the output looks like, check out the two examples in the "Examples" 
 1. Ensure that you've installed the "pandas" package. If you *do* need to install pandas, you can run following command in your command-line: `pip install pandas`
 2. Download the script: `regulations_comments_downloader.py`
 2. Obtain an API key on the [data.gov](https://api.data.gov/signup/) website.
-3. Replace two values in the script (near the top of the file):s
+3. Replace two values in the script (near the top of the file):
 	* **Set API key**: Replace `DEMO_KEY` with your personal API key
 	* **Set download directory**: Replace `/path/to/folder/` with the path to the directory where you'd like the script to download files. The script will take care of organizing the files!
-4. In your terminal, navigate to the folder where you downloaded/edited the script (`regulations_comments_downloader.py`).
+4. In your command-line, navigate to the folder where you downloaded/edited the script.
 5. Run the script, and when you do so, include as an argument the docket ID that you want to download. Ex: `python3 regulations_comments_downloader.py "BIS-2021-0036"`
 
 *Note: as mentioned above, if you exceed your API limit (1,000 calls per hour) in the middle of downloading a docket, the script will save your partial progress. All you need to do is wait an hour for your API calls to reset and then run the script again! It'll identify which comments you've already downloaded and skip over those, preserving your API calls for the comments that you haven't yet downloaded.*
