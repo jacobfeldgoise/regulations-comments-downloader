@@ -25,6 +25,11 @@ To see what the output looks like, check out the two examples in the "Examples" 
 4. In your command-line, navigate to the folder where you downloaded/edited the script.
 5. Run the script, and when you do so, include as an argument the docket ID that you want to download. Ex: `python3 regulations_comments_downloader.py "BIS-2021-0036"`
 
+## Common Issues
+
+* "Filename too long" Error in Windows when cloning this Git repository. Follow [these directions](https://www.javaprogramto.com/2020/04/git-filename-too-long.html).
+* New to Python? Here's how to run a Python script on [Windows](https://www.wikihow.com/Use-Windows-Command-Prompt-to-Run-a-Python-File) and [Mac](https://pythonbasics.org/execute-python-scripts/).
+
 *Note: as mentioned above, if you exceed your API limit (1,000 calls per hour) in the middle of downloading a docket, the script will save your partial progress. All you need to do is wait an hour for your API calls to reset and then run the script again! It'll identify which comments you've already downloaded and skip over those, preserving your API calls for the comments that you haven't yet downloaded.*
 
 MIT License- Copyright (c) 2021 Jacob A. Feldgoise

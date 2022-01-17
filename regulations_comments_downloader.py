@@ -28,6 +28,11 @@
 api_key = "DEMO_KEY"
 baseFolder_path = "/path/to/folder/"
 ###############################################################
+# Are you running this script from the command line?
+# If not, please set 'is_command_line' to 'False' and provide the docket ID below
+is_command_line = True
+docket_id_manual = ""
+###############################################################
 
 import requests, os, json, xmltodict, datetime, re, sys
 import pandas as pd
@@ -141,7 +146,7 @@ def get_comment_details(link, api_key, column_names, folder_path, comment_id, co
     if ("error" in comment_data) and (comment_data["error"]["code"] == "OVER_RATE_LIMIT"):
         print("[" + str(datetime.datetime.now()) + "] " + "You've exceeded your API limit! Wait an hour and try again.")
         return None
-    # ["modifyDate", "docketId", "commentOnDocumentId", "commentId", "organization", "firstName", "lastName", "title", "comment"]
+
     comment_data = comment_data["data"]
     comment_details = pd.DataFrame(columns = column_names)
     comment_details.at[0, 'commentOrDocument'] = commentOrDocument
@@ -161,36 +166,33 @@ def get_comment_details(link, api_key, column_names, folder_path, comment_id, co
         comment_details.at[0, 'commentOnDocumentId'] = None
         comment_details.at[0, 'comment'] = None
 
-    # Identify and save attachment links
+    # Identify and save attachment links:
     attachments = []
-    if commentOrDocument == "comment":
-        attachments_url = link + "/attachments?api_key={}".format(api_key)
-        attachments_data = json.loads(requests.get(attachments_url).text)
 
-        if ("error" in attachments_data) and (attachments_data["error"]["code"] == "OVER_RATE_LIMIT"):
-            return None
+    # See if an attachment is saved as "content"
+    try:
+        att_title = comment_data["attributes"]["title"]
+        att_link = comment_data["attributes"]["fileFormats"][0]["fileUrl"]
+        attachments.append((att_title, att_link))
+        print("\t[" + str(datetime.datetime.now()) + "] " + "Found an attachment in 'content'")
+    except:
+        print("\t[" + str(datetime.datetime.now()) + "] " + "Didn't find an attachment in 'content'")
 
-        attachments_data = attachments_data["data"]
-        for item in attachments_data:
-            if item["attributes"]["restrictReasonType"] == None:
-                title = item["attributes"]["title"]
-                link = item["attributes"]["fileFormats"][0]["fileUrl"]
-                attachments.append((title, link))
+    # Now retrieve all "attachments"
+    attachments_url = link + "/attachments?api_key={}".format(api_key)
+    attachments_data = json.loads(requests.get(attachments_url).text)
 
-        if len(attachments) > 0:
-            folder_path = folder_path + comment_id + "/"
-            folder_path_exists = os.path.isdir(folder_path)
-            if not folder_path_exists:
-                os.mkdir(folder_path)
-                print("\t[" + str(datetime.datetime.now()) + "] " + "Created folder at: " + folder_path)
-            else:
-                print("\t[" + str(datetime.datetime.now()) + "] " + "Folder already exists!")
+    if ("error" in attachments_data) and (attachments_data["error"]["code"] == "OVER_RATE_LIMIT"):
+        return None
 
-        for item in attachments:
-            title, link = item
-            save_attachment(folder_path, (title, link))
-    else:
+    attachments_data = attachments_data["data"]
+    for item in attachments_data:
+        if item["attributes"]["restrictReasonType"] == None:
+            att_title = item["attributes"]["title"]
+            att_link = item["attributes"]["fileFormats"][0]["fileUrl"]
+            attachments.append((att_title, att_link))
 
+    if len(attachments) > 0:
         folder_path = folder_path + comment_id + "/"
         folder_path_exists = os.path.isdir(folder_path)
         if not folder_path_exists:
@@ -199,12 +201,9 @@ def get_comment_details(link, api_key, column_names, folder_path, comment_id, co
         else:
             print("\t[" + str(datetime.datetime.now()) + "] " + "Folder already exists!")
 
-
-        attachments_data = [""]
-        title = comment_data["attributes"]["title"]
-        link = comment_data["attributes"]["fileFormats"][0]["fileUrl"]
-        attachments.append((title, link))
-        save_attachment(folder_path, (title, link))
+    for item in attachments:
+        att_title, att_link = item
+        save_attachment(folder_path, (att_title, att_link))
 
     comment_details.at[0, 'attachments'] = attachments
 
@@ -277,14 +276,19 @@ def setup_folder(baseFolder_path, docket_id):
     return folder_path
 
 
-def main_loop(api_key, baseFolder_path):
+def main_loop(api_key, baseFolder_path, is_command_line, docket_id_manual):
 
-    try:
-        docket_id = sys.argv[1]
-    except:
-        print("[" + str(datetime.datetime.now()) + "] " + "Make sure to include your docket ID as an argument!\nEx: python3 regulations_comments_downloader.py 'NIST-2021-0006'")
-        print("[" + str(datetime.datetime.now()) + "] " + "Exiting...")
-        return None
+    if is_command_line:
+        try:
+            docket_id = sys.argv[1]
+        except:
+            print("[" + str(datetime.datetime.now()) + "] " + "Make sure to include your docket ID as an argument!\nEx: python3 regulations_comments_downloader.py 'NIST-2021-0006'")
+            print("[" + str(datetime.datetime.now()) + "] " + "Exiting...")
+            return None
+
+    else:
+        docket_id = docket_id_manual
+        print("[" + str(datetime.datetime.now()) + "] " + "Loading docket ID directly from script...")
 
     column_names = ["commentOrDocument", "modifyDate", "docketId", "commentOnDocumentId", "id", "organization", "firstName", "lastName", "title", "comment", "attachments", "link"]
     folder_path = setup_folder(baseFolder_path, docket_id)
@@ -310,4 +314,4 @@ def main_loop(api_key, baseFolder_path):
         print("[" + str(datetime.datetime.now()) + "] " + "Exiting main loop...")
 
 
-main_loop(api_key, baseFolder_path)
+main_loop(api_key, baseFolder_path, is_command_line, docket_id_manual)
