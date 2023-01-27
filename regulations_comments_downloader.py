@@ -34,7 +34,7 @@ is_command_line = True
 docket_id_manual = ""
 ###############################################################
 
-import requests, os, json, xmltodict, datetime, re, sys
+import requests, os, json, xmltodict, datetime, re, sys, string
 import pandas as pd
 
 
@@ -122,19 +122,28 @@ def download(url, filename):
 
 def save_attachment(folder_path, attachment):
     name, url = attachment
+
+    # Reformat file name
+    remove = string.punctuation
+    remove = remove.replace(".", "") # don't remove periods
+    pattern = r"[{}]".format(remove) # create the pattern
+    name = re.sub(pattern, "", name)
+    name = name[0:254]
+
     file_path = folder_path + name
     ext = url.split('.')[-1]
-    file_path = file_path + "." + ext
+    ext = "." + ext
+    file_path = file_path + ext
 
     file_already_downloaded = os.path.exists(file_path)
 
     if not file_already_downloaded:
 
-        print("\t[" + str(datetime.datetime.now()) + "] " + "Downloading file ({})".format(name))
+        print("\t[" + str(datetime.datetime.now()) + "] " + "Downloading file ({})".format(name + ext))
         download(url, file_path)
 
     else:
-        print("\t[" + str(datetime.datetime.now()) + "] " + "File was already downloaded ({})".format(name))
+        print("\t[" + str(datetime.datetime.now()) + "] " + "File was already downloaded ({})".format(name + ext))
 
 def get_comment_details(link, api_key, column_names, folder_path, comment_id, commentOrDocument):
     print("[" + str(datetime.datetime.now()) + "] " + "Working on {} {}".format(commentOrDocument, comment_id))
@@ -169,12 +178,15 @@ def get_comment_details(link, api_key, column_names, folder_path, comment_id, co
     # Identify and save attachment links:
     attachments = []
 
+    attachmentInContent = 0
     # See if an attachment is saved as "content"
     try:
         att_title = comment_data["attributes"]["title"]
         att_link = comment_data["attributes"]["fileFormats"][0]["fileUrl"]
         attachments.append((att_title, att_link))
+        attachmentInContent = 1
         print("\t[" + str(datetime.datetime.now()) + "] " + "Found an attachment in 'content'")
+
     except:
         print("\t[" + str(datetime.datetime.now()) + "] " + "Didn't find an attachment in 'content'")
 
@@ -207,7 +219,7 @@ def get_comment_details(link, api_key, column_names, folder_path, comment_id, co
 
     comment_details.at[0, 'attachments'] = attachments
 
-    print("\t[" + str(datetime.datetime.now()) + "] " + "Collected {} {} with {} attachments ({} were downloadable)".format(commentOrDocument, comment_id, len(attachments_data), len(attachments)))
+    print("\t[" + str(datetime.datetime.now()) + "] " + "Collected {} {} with {} attachments ({} were downloadable)".format(commentOrDocument, comment_id, len(attachments_data) + attachmentInContent, len(attachments)))
     return comment_details
 
 def get_allComment_details(comment_links, document_links, folder_path, docket_id, api_key, column_names):
