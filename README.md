@@ -16,7 +16,7 @@ So how exactly does this script work? It's pretty simple!
 To see what the output looks like, check out the two examples in the "Examples" folder.
 
 ## Setup
-1. Ensure that you've installed `pandas and `xmltodict`. If you need to install these packages, run the following command in your command-line interface (CLI): `pip install pandas xmltodict`
+1. Ensure that you've installed `pandas` and `xmltodict`. If you need to install these packages, run the following command in your command-line interface (CLI): `pip install pandas xmltodict`
 2. Download the script: `regulations_comments_downloader.py`
 2. Obtain an API key on the [data.gov](https://api.data.gov/signup/) website.
 3. Replace two values in the script (near the top of the file):
